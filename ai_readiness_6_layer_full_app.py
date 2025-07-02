@@ -31,7 +31,13 @@ if uploaded_file is not None:
     # Step 2: Upload file to OpenAI
     with open(file_path, "rb") as f:
         file_upload = openai.files.create(file=f, purpose="assistants")
+        st.write(f"Uploaded file ID: {file_upload.id}")
 
+    # ✅ Ensure file upload is valid
+    if not file_upload or not getattr(file_upload, "id", None):
+        st.error("❌ File upload failed. Cannot proceed.")
+        st.stop()
+    
     # Step 3: Attach file to a message
     openai.beta.threads.messages.create(
         thread_id=thread.id,
