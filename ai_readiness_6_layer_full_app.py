@@ -3,6 +3,7 @@ import streamlit as st
 import openai
 import time
 import tempfile
+import os
 from io import BytesIO
 from fpdf import FPDF
 
