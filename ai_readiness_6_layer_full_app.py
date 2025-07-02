@@ -87,22 +87,27 @@ if uploaded_file is not None:
             st.markdown(msg.content[0].text.value)
 
             # PDF export
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font("Arial", size=12)
-            for line in msg.content[0].text.value.split("\n"):
-                pdf.cell(200, 10, txt=line, ln=1)
-            pdf_buffer = BytesIO()
-            # pdf_output = pdf.output(dest='S').encode('latin-1')
-            safe_output = pdf.output(dest='S').encode('latin-1', errors='replace')
-            pdf_buffer.write(safe_output)
-            pdf_buffer.write(pdf_output)
-            pdf_buffer.seek(0)
+            # Use a UTF-8 compatible font like DejaVuSans (install via apt/pip if needed)
+            font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+            if not os.path.exists(font_path):
+                st.error("❌ Unicode font not found. Please install 'DejaVuSans.ttf' or provide a valid path.")
+            else:
+                pdf = FPDF()
+                pdf.add_page()
+                pdf.add_font("DejaVu", fname=font_path, uni=True)
+                pdf.set_font("DejaVu", size=12)
 
-            st.download_button(
-                label="📄 Download Insights (PDF)",
-                data=pdf_buffer,
-                file_name="ai_readiness_insights.pdf",
-                mime="application/pdf"
-            )
+                for line in msg.content[0].text.value.split("\n"):
+                    pdf.multi_cell(0, 10, txt=line)
+
+                pdf_buffer = BytesIO()
+                pdf.output(pdf_buffer)
+                pdf_buffer.seek(0)
+
+                st.download_button(
+                    label="📄 Download Insights (PDF)",
+                    data=pdf_buffer,
+                    file_name="ai_readiness_insights.pdf",
+                    mime="application/pdf"
+                )
             break
