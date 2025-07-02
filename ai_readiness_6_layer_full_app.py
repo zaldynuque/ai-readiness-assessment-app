@@ -55,7 +55,7 @@ if uploaded_file is not None:
                 "Include tailored recommendations based on 0–4 scores."
             ),
             file_ids=[file_id]
-    )
+        )
 
     except Exception as e:
         st.error(f"❌ Failed to attach file to message: {e}")
