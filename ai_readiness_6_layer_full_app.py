@@ -60,7 +60,7 @@ if uploaded_file is not None:
     run = openai.beta.threads.runs.create(
         thread_id=thread.id,
         assistant_id=assistant_id,
-        additional_file_ids=[file_id]  # <-- attach file here
+        file_ids=[file_id]  # ✅ use this
     )
 
     # Step 5: Poll until completion
