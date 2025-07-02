@@ -4,7 +4,7 @@ import openai
 import time
 import tempfile
 from io import BytesIO
-from fpdf import FPDF
+from fpdf2 import FPDF
 
 st.set_page_config(page_title="AI Readiness Assessment with Assistant", layout="wide")
 
