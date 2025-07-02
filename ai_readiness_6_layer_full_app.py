@@ -50,7 +50,12 @@ if uploaded_file is not None:
             thread_id=thread.id,
             role="user",
             content="Please analyze this AI readiness report.",
-            tool_resources={"file_ids": [file_upload.id]}
+            attachments=[
+                {
+                    "file_id": file_upload.id,
+                    "tools": [{"type": "code_interpreter"}]
+                }
+            ]
         )
 
     except Exception as e:
