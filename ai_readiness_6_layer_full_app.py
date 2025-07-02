@@ -49,7 +49,8 @@ if uploaded_file is not None:
         openai.beta.threads.messages.create(
             thread_id=thread.id,
             role="user",
-            content="Please analyze this AI readiness report."
+            content="Please analyze this AI readiness report.",
+            tool_resources={"file_ids": [file_upload.id]}
         )
 
     except Exception as e:
@@ -58,9 +59,8 @@ if uploaded_file is not None:
 
     # Step 4: Run the assistant
     run = openai.beta.threads.runs.create(
-        thread_id=thread.id,
-        assistant_id=assistant_id,
-        file_ids=[file_id]  # ✅ use this
+    thread_id=thread.id,
+    assistant_id=assistant_id
     )
 
     # Step 5: Poll until completion
