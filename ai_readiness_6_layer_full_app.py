@@ -101,10 +101,10 @@ if uploaded_file is not None:
                 for line in msg.content[0].text.value.split("\n"):
                     pdf.multi_cell(0, 10, txt=line)
 
+                pdf_buffer = BytesIO()
                 pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
                 pdf_buffer.write(pdf_output)
                 # pdf.output(pdf_buffer)
-                pdf_buffer = BytesIO()
                 pdf_buffer.seek(0)
 
                 st.download_button(
