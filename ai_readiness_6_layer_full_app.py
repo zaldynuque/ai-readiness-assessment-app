@@ -42,21 +42,24 @@ if uploaded_file is not None:
     # Step 3: Attach file to a message
     try:
         file_id = str(file_upload.id)
-    if not file_id:
-        raise ValueError("Empty file ID returned from upload.")
+        if not file_id:
+            raise ValueError("Empty file ID returned from upload.")
 
     st.write("📎 Attaching file to assistant thread...")
-    
     openai.beta.threads.messages.create(
         thread_id=thread.id,
         role="user",
-        content="Please analyze this AI readiness report.",
+        content=(
+            "Analyze this AI readiness CSV/XLSX. Provide insights by layer: "
+            "Infrastructure, Orchestration, Knowledge, Model, Agent, and Governance. "
+            "Include tailored recommendations based on 0–4 scores."
+        ),
         file_ids=[file_id]
     )
+
     except Exception as e:
         st.error(f"❌ Failed to attach file to message: {e}")
         st.stop()
-
 
     # Step 4: Run the assistant
     run = openai.beta.threads.runs.create(
