@@ -1,45 +1,84 @@
 
 import streamlit as st
 import openai
-import os
+import time
+import tempfile
 from io import BytesIO
 from fpdf import FPDF
 
-# Load OpenAI API Key
-openai.api_key = os.getenv("OPENAI_API_KEY", st.secrets.get("OPENAI_API_KEY", ""))
+st.set_page_config(page_title="AI Readiness Assessment with Assistant", layout="wide")
 
-if not openai.api_key:
-    st.error("🔐 OpenAI API key not found. Please add it in secrets.toml or environment variable.")
-    st.stop()
-
-# Create the Assistant if not already created
-if "assistant_id" not in st.session_state:
-    with st.spinner("🧠 Creating AI Readiness Assistant..."):
-        assistant = openai.beta.assistants.create(
-            name="AI Readiness Advisor",
-            instructions=(
-                "You are an AI strategy advisor. The user will upload a CSV or XLSX containing scores for AI maturity "
-                "across six pillars (Infrastructure, Orchestration, Knowledge, Model, Agent, Governance). "
-                "Your job is to:"
-                "1. Analyze per-pillar scores"
-                "2. Identify weaknesses"
-                "3. Recommend specific, actionable next steps per pillar"
-                "4. Summarize overall maturity"
-                "Be precise, avoid generalities, and tailor suggestions to the score context (0–4)."
-            ),
-            model="gpt-4o",
-            tools=[{"type": "code_interpreter"}]
-        )
-        st.session_state.assistant_id = assistant.id
-        st.success("✅ Assistant created with ID: " + assistant.id)
-
-st.title("AI Readiness Assessment with Assistant")
-
+st.title("🧠 AI Readiness Assessment with Assistant")
 st.markdown("Upload your AI maturity score file (CSV/XLSX) and receive assistant-driven insights.")
 
+# Secure your OpenAI API Key
+openai.api_key = st.secrets["OPENAI_API_KEY"]
+assistant_id = st.secrets["OPENAI_ASSISTANT_ID"]
+
+# File Upload
 uploaded_file = st.file_uploader("Upload File", type=["csv", "xlsx"])
 
-if uploaded_file:
+if uploaded_file is not None:
+    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+        tmp_file.write(uploaded_file.read())
+        file_path = tmp_file.name
+
     st.success("File uploaded. Ready to process with assistant.")
-    st.write("📎 Assistant ID:", st.session_state.get("assistant_id"))
-    # You can add logic here to send the file to assistant for processing
+
+    # Step 1: Create a thread
+    thread = openai.beta.threads.create()
+
+    # Step 2: Upload file to OpenAI
+    with open(file_path, "rb") as f:
+        file_upload = openai.files.create(file=f, purpose="assistants")
+
+    # Step 3: Attach file to a message
+    openai.beta.threads.messages.create(
+        thread_id=thread.id,
+        role="user",
+        content="Please analyze this AI readiness report.",
+        file_ids=[file_upload.id]
+    )
+
+    # Step 4: Run the assistant
+    run = openai.beta.threads.runs.create(
+        thread_id=thread.id,
+        assistant_id=assistant_id
+    )
+
+    # Step 5: Poll until completion
+    with st.spinner("🔍 Assistant is analyzing your report..."):
+        while True:
+            run_status = openai.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
+            if run_status.status == "completed":
+                break
+            elif run_status.status == "failed":
+                st.error("❌ Assistant failed to process the report.")
+                st.stop()
+            time.sleep(2)
+
+    # Step 6: Retrieve assistant response
+    messages = openai.beta.threads.messages.list(thread_id=thread.id)
+    for msg in reversed(messages.data):
+        if msg.role == "assistant":
+            st.subheader("✅ Assistant Insights")
+            st.markdown(msg.content[0].text.value)
+
+            # PDF export
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", size=12)
+            for line in msg.content[0].text.value.split("\n"):
+                pdf.cell(200, 10, txt=line, ln=1)
+            pdf_buffer = BytesIO()
+            pdf_output = pdf.output(dest='S').encode('latin-1')
+            pdf_buffer.write(pdf_output)
+            pdf_buffer.seek(0)
+
+            st.download_button(
+                label="📄 Download Insights (PDF)",
+                data=pdf_buffer,
+                file_name="ai_readiness_insights.pdf",
+                mime="application/pdf"
+            )
+            break
