@@ -45,7 +45,7 @@ if uploaded_file is not None:
         if not file_id:
             raise ValueError("Empty file ID returned from upload.")
 
-    st.write("📎 Attaching file to assistant thread...")
+        st.write("📎 Attaching file to assistant thread...")
     openai.beta.threads.messages.create(
         thread_id=thread.id,
         role="user",
