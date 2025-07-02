@@ -1,5 +1,4 @@
 
-
 import streamlit as st
 import openai
 import os
@@ -21,16 +20,11 @@ if "assistant_id" not in st.session_state:
             instructions=(
                 "You are an AI strategy advisor. The user will upload a CSV or XLSX containing scores for AI maturity "
                 "across six pillars (Infrastructure, Orchestration, Knowledge, Model, Agent, Governance). "
-                "Your job is to:
-"
-                "1. Analyze per-pillar scores
-"
-                "2. Identify weaknesses
-"
-                "3. Recommend specific, actionable next steps per pillar
-"
-                "4. Summarize overall maturity
-"
+                "Your job is to:"
+                "1. Analyze per-pillar scores"
+                "2. Identify weaknesses"
+                "3. Recommend specific, actionable next steps per pillar"
+                "4. Summarize overall maturity"
                 "Be precise, avoid generalities, and tailor suggestions to the score context (0–4)."
             ),
             model="gpt-4o",
