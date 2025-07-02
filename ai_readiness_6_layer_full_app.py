@@ -46,15 +46,15 @@ if uploaded_file is not None:
             raise ValueError("Empty file ID returned from upload.")
 
         st.write("📎 Attaching file to assistant thread...")
-    openai.beta.threads.messages.create(
-        thread_id=thread.id,
-        role="user",
-        content=(
-            "Analyze this AI readiness CSV/XLSX. Provide insights by layer: "
-            "Infrastructure, Orchestration, Knowledge, Model, Agent, and Governance. "
-            "Include tailored recommendations based on 0–4 scores."
-        ),
-        file_ids=[file_id]
+        openai.beta.threads.messages.create(
+            thread_id=thread.id,
+            role="user",
+            content=(
+                "Analyze this AI readiness CSV/XLSX. Provide insights by layer: "
+                "Infrastructure, Orchestration, Knowledge, Model, Agent, and Governance. "
+                "Include tailored recommendations based on 0–4 scores."
+            ),
+            file_ids=[file_id]
     )
 
     except Exception as e:
